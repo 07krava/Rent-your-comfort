@@ -2,6 +2,7 @@ package com.example.rent_yourcomfort.service.impl;
 
 import com.example.rent_yourcomfort.configuration.SecurityUtil;
 import com.example.rent_yourcomfort.dto.HousingDTO;
+import com.example.rent_yourcomfort.dto.LocationDTO;
 import com.example.rent_yourcomfort.dto.PhotoDTO;
 import com.example.rent_yourcomfort.exception.HousingNotFoundException;
 import com.example.rent_yourcomfort.exception.UnauthorizedException;
@@ -53,7 +54,7 @@ public class HousingServiceImpl implements HousingService {
         List<Housing> result = new ArrayList<>();
         for (Housing housing : housings) {
             Location location = housing.getLocation();
-            if (location != null && location.getCity().equals(city)) {
+            if (location != null && location.getCity() != null && location.getCity().equalsIgnoreCase(city)) {
                 result.add(housing);
             }
         }
@@ -93,19 +94,9 @@ public class HousingServiceImpl implements HousingService {
         owner.addRole(Role.OWNER);
         housing.setOwner(owner);
 
-        housingRepository.save(housing);
-
         // Создание и сохранение объекта Location
-        Location location = new Location();
-        location.setCountry(housingDTO.getLocation().getCountry());
-        location.setRegion(housingDTO.getLocation().getRegion());
-        location.setCity(housingDTO.getLocation().getCity());
-        location.setStreet(housingDTO.getLocation().getStreet());
-        location.setHouseNumber(housingDTO.getLocation().getHouseNumber());
-        location.setApartmentNumber(housingDTO.getLocation().getApartmentNumber());
-        location.setZipCode(housingDTO.getLocation().getZipCode());
-        location.setHousing(housing);
-        housing.setLocation(location);
+        housing.setLocation(housingDTO.getLocation());
+        housing.getLocation().setHousing(housing);
 
         List<Photo> photoEntities = new ArrayList<>();
         for (MultipartFile file : files) {
@@ -117,7 +108,8 @@ public class HousingServiceImpl implements HousingService {
         }
         housing.setPhotos(photoEntities);
 
-        housingRepository.save(housing);
+        // Сохраняем Housing после всех изменений
+        housing = housingRepository.save(housing);
 
         return convertToDTO(housing);
     }
@@ -302,5 +294,18 @@ public class HousingServiceImpl implements HousingService {
                 .filter(housing -> housing.getBookings().stream()
                         .anyMatch(booking -> Objects.equals(booking.getStatus(), "approved") && isOverlapping(booking.getStartDate(), booking.getEndDate(), startDate, endDate)))
                 .collect(Collectors.toList());
+    }
+
+    private Location mapToLocation(LocationDTO location){
+        return Location.builder()
+                .country(location.getCountry())
+                .region(location.getRegion())
+                .city(location.getCity())
+                .street(location.getStreet())
+                .houseNumber(location.getHouseNumber())
+                .apartmentNumber(location.getApartmentNumber())
+                .zipCode(location.getZipCode())
+                .build();
+
     }
 }

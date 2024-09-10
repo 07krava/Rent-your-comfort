@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -30,20 +31,23 @@ public class UserServiceImpl implements UserService {
     @Override
     public User createUser(User user) {
 
-        User existingUser = userRepository.findByEmail(user.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
 
-        if (existingUser != null){
+        if (existingUser.isPresent()) {
             throw new RuntimeException("This user already exists!");
         }
 
-        Wallet walletEntity = new Wallet();
+        Wallet walletEntity = user.getWallet();
+        if (walletEntity == null) {
+            // Если кошелька нет, создаем новый
+            walletEntity = new Wallet();
+            walletEntity.setUser(user);
+            user.setWallet(walletEntity);
+        }
 
         user.getWallet().setBalance(walletEntity.getBalance() != null ? walletEntity.getBalance() : BigDecimal.ZERO);
         walletEntity.setCurrency(walletEntity.getCurrency());
-        walletEntity.setFrozenBalance(walletEntity.getFrozenBalance()!= null ? walletEntity.getFrozenBalance() : BigDecimal.ZERO);
-
-        walletEntity.setUser(user);
+        walletEntity.setFrozenBalance(walletEntity.getFrozenBalance()!= null ? walletEntity.getFrozenBalance() : BigDecimal.ZERO);        walletEntity.setUser(user);
 
         user.setWallet(walletEntity);
         user.setRole(Collections.singleton(Role.USER));

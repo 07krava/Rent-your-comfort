@@ -2,9 +2,13 @@ package com.example.rent_yourcomfort.dto;
 
 import com.example.rent_yourcomfort.model.Housing;
 import com.example.rent_yourcomfort.model.Location;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class LocationDTO {
     private String country;
     private String region;
@@ -15,17 +19,19 @@ public class LocationDTO {
     private String zipCode;
     private Housing housing;
 
-    public static LocationDTO convertToLocationDTO(Location location) {
-        LocationDTO locationDTO = new LocationDTO();
-        locationDTO.setCountry(location.getCountry());
-        locationDTO.setRegion(location.getRegion());
-        locationDTO.setCity(location.getCity());
-        locationDTO.setStreet(location.getStreet());
-        locationDTO.setHouseNumber(location.getHouseNumber());
-        locationDTO.setApartmentNumber(location.getApartmentNumber());
-        locationDTO.setZipCode(location.getZipCode());
-        locationDTO.setHousing(location.getHousing());
-        return locationDTO;
+    public LocationDTO(String country, String region, String city, String street, int houseNumber, Integer apartmentNumber, String zipCode) {
+    }
+
+    public static LocationDTO convertToDTO(Location location) {
+        return new LocationDTO(
+                location.getCountry(),
+                location.getRegion(),
+                location.getCity(),
+                location.getStreet(),
+                location.getHouseNumber(),
+                location.getApartmentNumber(),
+                location.getZipCode()
+        );
     }
 
     public static Location convertToLocation(LocationDTO locationDTO){

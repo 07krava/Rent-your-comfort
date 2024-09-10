@@ -45,8 +45,6 @@ public class UserController {
         // Получить имя пользователя из Principal
         String username = principal.getName();
 
-        System.out.println(username);
-
         // Проверить, что пользователь аутентифицирован
         if (username == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
